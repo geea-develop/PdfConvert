@@ -1,0 +1,4 @@
+requests
+tabula-py
+shutil
+os
