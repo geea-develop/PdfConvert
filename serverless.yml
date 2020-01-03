@@ -11,7 +11,7 @@
 #
 # Happy Coding!
 
-service: PdfConvert # NOTE: update this with your service name
+service: pdf-convert # NOTE: update this with your service name
 
 # You can pin your service to only deploy with a specific Serverless version
 # Check out our docs for more details
@@ -20,13 +20,34 @@ service: PdfConvert # NOTE: update this with your service name
 provider:
   name: aws
   runtime: python3.6
+  stage: ${opt:stage, 'dev'}
+  versionFunctions: false
+  region: ${opt:region, 'eu-west-1'}
+  logRetentionInDays: 7
+  timeout: 15
+  deploymentBucket:
+    name: geeaweb.serverless.${self:provider.region}.deploys
 
 # you can overwrite defaults here
 #  stage: dev
 #  region: us-east-1
 
 # you can add statements to the Lambda function's IAM Role here
-#  iamRoleStatements:
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+      - "s3:PutObject"
+      - "s3:PutObjectAcl"
+      - "s3:ListBucketMultipartUploads"
+      - "s3:ListMultipartUploadParts"
+      - "s3:AbortMultipartUpload"
+      Resource:
+        Fn::Join:
+          - ""
+          - - "arn:aws:s3:::"
+            - "Ref" : "S3Bucket"
+            - "/*"
+
 #    - Effect: "Allow"
 #      Action:
 #        - "s3:ListBucket"
@@ -41,9 +62,6 @@ provider:
 #            - "Ref" : "ServerlessDeploymentBucket"
 #            - "/*"
 
-# you can define service wide environment variables here
-#  environment:
-#    variable1: value1
 
 # you can add packaging information here
 #package:
@@ -55,9 +73,16 @@ provider:
 #    - exclude-me-dir/**
 
 functions:
-  ConvertToCsv:
-    handler: ConvertToCsv.handler
-
+  convert:
+    handler: convert.handler
+    events:
+      - s3:
+          bucket: ${self:service}-${opt:stage}-clockit-pdf-dump
+          event: s3:ObjectCreated:*
+          rules:
+            - prefix: uploads/
+            - suffix: .pdf
+          existing: true
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events
 #    Check the event documentation for details
@@ -92,16 +117,12 @@ functions:
 #      variable2: value2
 
 # you can add CloudFormation resource templates here
-#resources:
-#  Resources:
-#    NewResource:
-#      Type: AWS::S3::Bucket
-#      Properties:
-#        BucketName: my-new-bucket
-#  Outputs:
-#     NewOutput:
-#       Description: "Description for the output"
-#       Value: "Some output value"
+resources:
+  Resources:
+    S3Bucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:service}-${opt:stage}-clockit-pdf-dump
 
 plugins:
   - serverless-python-requirements
@@ -109,3 +130,6 @@ plugins:
 custom:
   pythonRequirements:
     dockerizePip: true
+#    invalidateCaches: true
+#    useStaticCache: false
+#    useDownloadCache: false
