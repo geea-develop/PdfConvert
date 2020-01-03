@@ -26,7 +26,7 @@ provider:
   logRetentionInDays: 7
   timeout: 15
   deploymentBucket:
-    name: geeaweb.serverless.${self:provider.region}.deploys
+    name: ${env.COMPANY, 'someprefix'}.serverless.${self:provider.region}.deploys
 
 # you can overwrite defaults here
 #  stage: dev
@@ -41,11 +41,11 @@ provider:
         - Fn::Join:
             - ""
             - - "arn:aws:s3:::"
-              - ${self:service}-${opt:stage}-clockit-pdf-dump
+              - ${self:service}-${opt:stage}-${env.BUCKET_NAME, 'clockit-reports'}
         - Fn::Join:
             - ""
             - - "arn:aws:s3:::"
-              - ${self:service}-${opt:stage}-clockit-pdf-dump
+              - ${self:service}-${opt:stage}-${env.BUCKET_NAME, 'clockit-reports'}
               - "/*"
 #    - Effect: "Allow"
 #      Action:
@@ -76,7 +76,7 @@ functions:
     handler: convert.handler
     events:
       - s3:
-          bucket: ${self:service}-${opt:stage}-clockit-pdf-dump
+          bucket: ${self:service}-${opt:stage}-${env.BUCKET_NAME, 'clockit-reports'}
           event: s3:ObjectCreated:*
           rules:
             - prefix: uploads/
