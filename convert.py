@@ -25,7 +25,7 @@ def handler(event, context):
     # source_path = "./reports-csv-out"
 
     # save file in tmp
-    s3.Bucket(s3bucket).download_file(s3object, source_path + '/' + s3objectName + '.pdf')
+    s3.Bucket(s3bucket).download_file('uploads/' + s3objectName + '.pdf', source_path + '/' + s3objectName + '.pdf')
 
     out_path = source_path + '/' + s3objectName + '.csv'
 
