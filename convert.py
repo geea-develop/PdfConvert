@@ -16,14 +16,14 @@ def handler(event, context):
     s3bucket = record['s3']['bucket']['name']
     s3object = record['s3']['object']['key']
 
-    source_path = "/tmp"
+    source_path = "/tmp/reports-pdf-in"
 
     s3.Bucket(s3bucket).download_file(s3object, source_path + '/' + s3object)
 
-    tabula.convert_into_by_batch("/tmp/reports-pdf-in", output_format='csv')
+    tabula.convert_into_by_batch(source_path, output_format='csv')
 
     try:
-        s3.Bucket(s3bucket).upload_file(source_path + '/' + s3object, '/reports-csv-out/' + s3object)
+        s3.Bucket(s3bucket).upload_file(source_path + '/' + s3object[0:-4] + '.csv', '/reports-csv-out/' + s3object)
     except Exception as e:
         print(e)
 
