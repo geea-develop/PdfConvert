@@ -1,10 +1,10 @@
 import json
 import tabula
 import boto3
-
+from urllib.parse import unquote
 
 # Create an S3 client
-s3 = boto3.client('s3')
+s3 = boto3.resource('s3')
 
 def handler(event, context):
     # Read pdf into DataFrame
@@ -15,17 +15,25 @@ def handler(event, context):
 
     s3bucket = record['s3']['bucket']['name']
     s3object = record['s3']['object']['key']
+    s3objectName = unquote(s3object[8:-4])
 
-    source_path = "/tmp/reports-pdf-in"
+    print({ s3bucket })
+    print({ s3objectName })
+    print({ s3object })
 
-    s3.Bucket(s3bucket).download_file(s3object, source_path + '/' + s3object)
+    source_path = "/tmp"
+    # source_path = "./reports-csv-out"
 
-    tabula.convert_into_by_batch(source_path, output_format='csv')
+    # save file in tmp
+    s3.Bucket(s3bucket).download_file(s3object, source_path + '/' + s3objectName + '.pdf')
 
-    try:
-        s3.Bucket(s3bucket).upload_file(source_path + '/' + s3object[0:-4] + '.csv', '/reports-csv-out/' + s3object)
-    except Exception as e:
-        print(e)
+    out_path = source_path + '/' + s3objectName + '.csv'
+
+    # read table from temp pdf file
+    tabula.convert_into(source_path + '/' + s3objectName + '.pdf', out_path, output_format="csv")
+
+    # upload parsed csv
+    s3.Bucket(s3bucket).upload_file(out_path, s3objectName + '.csv')
 
     body = {
         "message": "Go Serverless v1.0! Your function executed successfully!",

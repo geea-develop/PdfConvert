@@ -36,18 +36,17 @@ provider:
   iamRoleStatements:
     - Effect: "Allow"
       Action:
-      - "s3:PutObject"
-      - "s3:PutObjectAcl"
-      - "s3:ListBucketMultipartUploads"
-      - "s3:ListMultipartUploadParts"
-      - "s3:AbortMultipartUpload"
+        - "s3:*"
       Resource:
-        Fn::Join:
-          - ""
-          - - "arn:aws:s3:::"
-            - "Ref" : "S3Bucket"
-            - "/*"
-
+        - Fn::Join:
+            - ""
+            - - "arn:aws:s3:::"
+              - ${self:service}-${opt:stage}-clockit-pdf-dump
+        - Fn::Join:
+            - ""
+            - - "arn:aws:s3:::"
+              - ${self:service}-${opt:stage}-clockit-pdf-dump
+              - "/*"
 #    - Effect: "Allow"
 #      Action:
 #        - "s3:ListBucket"
@@ -117,19 +116,23 @@ functions:
 #      variable2: value2
 
 # you can add CloudFormation resource templates here
-resources:
-  Resources:
-    S3Bucket:
-      Type: AWS::S3::Bucket
-      Properties:
-        BucketName: ${self:service}-${opt:stage}-clockit-pdf-dump
+#resources:
+#  Resources:
+#    S3Bucket:
+#      Type: AWS::S3::Bucket
+#      Properties:
+#        BucketName: ${self:service}-${opt:stage}-clockit-pdf-dump
 
 plugins:
   - serverless-python-requirements
 
 custom:
   pythonRequirements:
+    noDeploy:
+      - boto3
+      - requests
     dockerizePip: true
+    slim: true
 #    invalidateCaches: true
 #    useStaticCache: false
 #    useDownloadCache: false

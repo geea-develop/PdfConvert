@@ -3,6 +3,9 @@
   "description": "",
   "version": "0.1.0",
   "dependencies": {},
+  "scripts": {
+    "deploy": "SLS_DEBUG=* sls deploy --stage dev"
+  },
   "devDependencies": {
     "serverless-python-requirements": "^5.0.1"
   }
