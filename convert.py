@@ -33,7 +33,7 @@ def handler(event, context):
     tabula.convert_into(source_path + '/' + s3objectName + '.pdf', out_path, output_format="csv")
 
     # upload parsed csv
-    s3.Bucket(s3bucket).upload_file(out_path, s3objectName + '.csv')
+    s3.Bucket(s3bucket).upload_file(out_path, 'uploads-csv/' + s3objectName + '.csv')
 
     body = {
         "message": "Go Serverless v1.0! Your function executed successfully!",
