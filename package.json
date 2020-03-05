@@ -7,6 +7,6 @@
     "deploy": "SLS_DEBUG=* sls deploy --stage dev"
   },
   "devDependencies": {
-    "serverless-python-requirements": "^5.0.1"
+    "serverless-python-requirements": "5.0.1"
   }
 }
